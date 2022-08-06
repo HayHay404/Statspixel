@@ -1,4 +1,15 @@
 {
+    "author": {
+        "name": "HayHay404",
+        "url": "https://github.com/HayHay404"
+    },
+    "contributors": [
+        {
+            "name": "Pixwl",
+            "email": "pixwl@pixwl.dev",
+            "url": "https://pixwl.dev"
+        }
+    ],
     "scripts": {
         "build": "tsc",
         "start": "cd dist && node app.js"
