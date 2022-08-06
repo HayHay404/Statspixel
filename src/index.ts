@@ -63,7 +63,7 @@ client.on("chat", async (channel, userState, message, self) => {
  * @returns {Object} The data that will be sent to the channel
  */
 function parseData(data : any, game : string) {
-    let response = null;
+    let response: any | null = null;
 
     switch (game) {
         case "bw" || "bedwars":
@@ -80,7 +80,6 @@ function parseData(data : any, game : string) {
             break;
 
         default:
-            response = null;
             break;
     }
 
