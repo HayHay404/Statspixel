@@ -1,11 +1,11 @@
 import dotenv from "dotenv"
+import path from "path" // We need this above to get the path to the .env file
 
 // Best practice (imo) to put this at the top of the file. Incase any imports needs to access .env
 dotenv.config({path: path.resolve(__dirname, '..', '.env')})
 
 import axios from "axios"
 import tmi from "tmi.js"
-import path from 'path'
 
 const client = tmi.Client({
     options: {
