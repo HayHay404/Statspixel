@@ -37,23 +37,16 @@ client.on("chat", async (channel, userState, message, self) => {
     // Remove the "h!" and split the message into an array of words
     // Also makes it so that you don't need to put a space after the prefix
     const args = message.slice("h!".length).split(" ")
-    if (args.length < 2) return; // Invalid command
+    if (args.length < 2) {
+        client.say(channel, "Please include a minecraft username")
+        return; // Invalid command — Update this later to get leaderboards
+    }
 
     const data = await getHypixelInfo(args[1]);
 
-    if (data == null) return;
+    if (data == undefined) return client.say(channel, "That player does not exist.");
 
-    const response = parseData(data, args[0])
-
-    if (response == null) {
-        return client.say(channel, "User not found. Please try again later.")
-    } else if (response == undefined) {
-        return client.say(channel, "That player does not exist.")
-    }
-
-    // You might want to make the message just what the function returns
-    // For some gamemodes, it probably won't be the same types of data (e.g. survival)
-    return client.say(channel, `Stats for ${args[1]}: Wins: ${response["wins"]}, Losses: ${response["losses"]}, Winstreak: ${response["winstreak"]}, FKDR: ${response["fkdr"]}`)
+    const response = parseData(data, args[0], channel, args[1])
 })
 
 /**
@@ -62,7 +55,7 @@ client.on("chat", async (channel, userState, message, self) => {
  * @param game The game that the user is requesting
  * @returns {Object} The data that will be sent to the channel
  */
-function parseData(data : any, game : string) {
+function parseData(data : any, game : string, channel : string, username : string): object {
     let response: any | null = null;
 
     switch (game) {
@@ -70,20 +63,39 @@ function parseData(data : any, game : string) {
             data = data["stats"]["Bedwars"]
             const fkdr = (data["final_kills_bedwars"] / data["final_deaths_bedwars"]).toPrecision(4);
 
-            response = {
-                "fkdr": fkdr,
-                "losses": data["losses_bedwars"],
-                "wins": data["wins_bedwars"],
-                "winstreak": data["winstreak"]
-            }
             // console.log(response)
-            break;
+            return client.say(
+                channel, 
+                `Stats for ${username}: 
+                Wins: ${data["wins_bedwars"]}, 
+                Losses: ${data["losses_bedwars"]}, 
+                Winstreak: ${data["winstreak"]}, 
+                FKDR: ${fkdr}`
+            );
+        
+        case "mm" || "murdermystery":
+            data = data["stats"]["MurderMystery"];
+            const kd = (data["kills"] / data["deaths"]).toPrecision(4);
+
+            return client.say(channel, `Stats for ${username}: 
+            Wins: ${data["wins"]}, 
+            KD: ${kd}`);
+        
+        case "sw" || "skywars":
+            data = data["stats"]["SkyWars"];
+
+            return client.say(
+                channel,
+                `Stats for ${username}: 
+                Wins: ${data["wins"]}, 
+                Losses: ${data["losses"]}, 
+                Deaths: ${data["deaths"]}, 
+                Kills: ${data["kills"]}`
+            );
 
         default:
-            break;
+            return client.say(channel, "Possible commands include: h!bw, h!sw, h!mm")
     }
-
-    return response;
 }
 
 /**
@@ -110,10 +122,10 @@ async function getUUID(name : string) {
  * @param name The username of the player
  * @returns {Object} The data from the Hypixel API
  */
-async function getHypixelInfo(name : string) {
+async function getHypixelInfo(name : string): Promise<any> {
 
     const uuid = await getUUID(name)
-    if (uuid == null) {
+    if (uuid == undefined || uuid == null) {
         return undefined;
     }
 
